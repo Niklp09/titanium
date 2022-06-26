@@ -1,10 +1,4 @@
----
----Titanium Mod Version 4 By Aqua. Added new Google Glass Titanium. Be nice this is my first mod!!! Subscribe to my YouTube: youtube.com/theshaunzero!
----
-
----
----blocks
----
+--blocks
 
 local enable_walking_light = minetest.settings:get_bool(
 	"titanium_walking_light", true)
@@ -55,40 +49,7 @@ minetest.register_node( "titanium:titanium_plate", {
 	sounds = default.node_sound_stone_defaults(),
 })
 
-minetest.register_node( "titanium:titanium_tv_1", {
-	description = "Titanium TV",
-	tiles  = { "titanium_tv_1.png" },
-	groups = {snappy=1,bendy=2,cracky=1,melty=2,level=2},
-	drop = 'titanium:titanium_tv_1',
-	light_source = 8,
-})
-
-minetest.register_node( "titanium:titanium_tv_2", {
-	description = "Titanium TV",
-	tiles  = { "titanium_tv_2.png" },
-	groups = {snappy=1,bendy=2,cracky=1,melty=2,level=2},
-	drop = 'titanium:titanium_tv_1',
-	light_source = 8,
-})
-
-minetest.register_abm({
-	nodenames = {"titanium:titanium_tv_1", "titanium:titanium_tv_2"},
-	interval = 12,
-	chance = 1,
-	catch_up = false,
-	action = function(pos, node)
-		if math.random(2) == 1
-		and node.name == "titanium:titanium_tv_2" then
-			minetest.add_node(pos, {name="titanium:titanium_tv_1"})
-		elseif node.name == "titanium:titanium_tv_1" then
-			minetest.add_node(pos, {name="titanium:titanium_tv_2"})
-		end
-	end
-})
-
----
----tools
----
+--tools
 
 minetest.register_tool("titanium:sword", {
 	description = "Titanium Sword",
@@ -143,10 +104,7 @@ minetest.register_tool("titanium:pick", {
 	},
 })
 
-
----
----crafting
----
+--crafting
 
 minetest.register_craft({
 	output = 'titanium:pick',
@@ -214,15 +172,6 @@ minetest.register_craft({
 	recipe = {
 		{'titanium:titanium', 'titanium:titanium'},
 		{'titanium:titanium', 'titanium:titanium'},
-	}
-})
-
-minetest.register_craft({
-	output = 'titanium:titanium_tv_1',
-	recipe = {
-		{'default:steel_ingot', 'titanium:tougher_titanium', 'default:steel_ingot'},
-		{'titanium:tougher_titanium', 'default:glass', 'titanium:tougher_titanium'},
-		{'default:steel_ingot', 'titanium:tougher_titanium', 'default:steel_ingot'},
 	}
 })
 
@@ -346,9 +295,6 @@ if enable_walking_light then
 	end
 	continue_steps()
 
-	------------------------------------------------------
-	-- Version 4------------------------------------------
-
 	minetest.register_node("titanium:light", {
 		drawtype = "airlike",
 		walkable = false,
@@ -378,8 +324,8 @@ if enable_walking_light then
 			{'titanium:glass', 'default:mese_crystal', 'titanium:glass'},
 		}
 	})
-	--------------------------------------------------------
+
 	minetest.register_alias("titanium:who_knows", "air")
 end
 
-minetest.log("info", "[Titanium Mod] Loaded! By Aqua! Subscribe to my YouTube: youtube.com/theshaunzero!")
+minetest.log("info", "[Titanium Mod] Loaded!")
