@@ -273,6 +273,7 @@ if enable_walking_light then
 					player_positions[player_name] = pos
 				end
 
+				local wielded_item
 				last_wielded[player_name] = wielded_item;
 			elseif last_wielded[player_name] == "titanium:sam_titanium" then
 				local pos = vector.round(player:get_pos())
