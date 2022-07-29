@@ -1,8 +1,5 @@
 --blocks
 
-local enable_walking_light = minetest.settings:get_bool(
-	"titanium_walking_light", true)
-
 minetest.register_node( "titanium:titanium_in_ground", {
 	description = "Titanium Ore",
 	tiles  = { "default_stone.png^titanium_titanium_in_ground.png" },
@@ -178,9 +175,9 @@ minetest.register_craft({
 minetest.register_craft({
 	output = 'titanium:titanium_plate 9',
 	recipe = {
-		{'titanium:titanium', 'titanium:titanium', 'titanium:titanium'},
+		{'titanium:tougher_titanium', 'titanium:titanium', 'titanium:tougher_titanium'},
 		{'titanium:titanium', 'titanium:tougher_titanium', 'titanium:titanium'},
-		{'titanium:titanium', 'titanium:titanium', 'titanium:titanium'},
+		{'titanium:tougher_titanium', 'titanium:titanium', 'titanium:tougher_titanium'},
 	}
 })
 
@@ -203,131 +200,127 @@ minetest.register_ore({
 	y_max = -1500,
 })
 
-if enable_walking_light then
+local players = {}
+local player_positions = {}
+local last_wielded = {}
 
-	local players = {}
-	local player_positions = {}
-	local last_wielded = {}
+local function check_for_googles(player)
+	if not player then
+		return
+	end
+	local hotbar = player:get_inventory():get_list("main")
+	for i = 1, player:hud_get_hotbar_itemcount() do
+		if hotbar[i]:get_name() == "titanium:sam_titanium" then
+			return true
+		end
+	end
+end
 
-	local function check_for_googles(player)
-		if not player then
+minetest.register_on_joinplayer(function(player)
+	local player_name = player:get_player_name()
+	players[#players+1] = player_name
+	last_wielded[player_name] = player:get_wielded_item():get_name()
+	local pos = vector.round(player:get_pos())
+	pos.y = pos.y+1
+	if not check_for_googles(player)
+	and minetest.get_node(pos).name == "titanium:light" then
+		minetest.remove_node(pos)
+	end
+	player_positions[player_name] = pos
+end)
+
+minetest.register_on_leaveplayer(function(player)
+	local player_name = player:get_player_name()
+	for i,v in ipairs(players) do
+		if v == player_name then
+			table.remove(players, i)
+			last_wielded[player_name] = nil
+			player_positions[player_name] = nil
+			local pos = vector.round(player:get_pos())
+			pos.y = pos.y+1
+			if minetest.get_node(pos).name == "titanium:light" then
+				minetest.remove_node(pos)
+			end
 			return
 		end
-		local hotbar = player:get_inventory():get_list("main")
-		for i = 1, player:hud_get_hotbar_itemcount() do
-			if hotbar[i]:get_name() == "titanium:sam_titanium" then
-				return true
-			end
-		end
 	end
+end)
 
-	minetest.register_on_joinplayer(function(player)
-		local player_name = player:get_player_name()
-		players[#players+1] = player_name
-		last_wielded[player_name] = player:get_wielded_item():get_name()
-		local pos = vector.round(player:get_pos())
-		pos.y = pos.y+1
-		if not check_for_googles(player)
-		and minetest.get_node(pos).name == "titanium:light" then
-			minetest.remove_node(pos)
-		end
-		player_positions[player_name] = pos
-	end)
-
-	minetest.register_on_leaveplayer(function(player)
-		local player_name = player:get_player_name()
-		for i,v in ipairs(players) do
-			if v == player_name then
-				table.remove(players, i)
-				last_wielded[player_name] = nil
-				player_positions[player_name] = nil
-				local pos = vector.round(player:get_pos())
-				pos.y = pos.y+1
-				if minetest.get_node(pos).name == "titanium:light" then
-					minetest.remove_node(pos)
-				end
-				return
-			end
-		end
-	end)
-
-	local function do_step()
-		for _,player_name in ipairs(players) do
-			local player = minetest.get_player_by_name(player_name)
-			if check_for_googles(player) then
-				local pos = vector.round(player:get_pos())
-				pos.y = pos.y+1
-				local new_pos = not vector.equals(pos, player_positions[player_name])
-				if last_wielded[player_name] ~= "titanium:sam_titanium"
-				or new_pos then
-					if (minetest.get_node_light(pos) or 0) < 11
-					and minetest.get_node(pos).name == "air" then
-						minetest.add_node(pos, {name="titanium:light"})
-					end
-					if new_pos then
-						local old_pos = player_positions[player_name]
-						if minetest.get_node(old_pos).name == "titanium:light" then
-							minetest.remove_node(old_pos)
+local timer = 0
+minetest.register_globalstep(function(dtime)
+	if dtime then
+		timer = timer + dtime
+		if timer > 0.3 then
+			for _,player_name in ipairs(players) do
+				local player = minetest.get_player_by_name(player_name)
+				if check_for_googles(player) then
+					local pos = vector.round(player:get_pos())
+					pos.y = pos.y+1
+					local new_pos = not vector.equals(pos, player_positions[player_name])
+					if last_wielded[player_name] ~= "titanium:sam_titanium"
+					or new_pos then
+						if (minetest.get_node_light(pos) or 0) < 11
+						and minetest.get_node(pos).name == "air" then
+							minetest.add_node(pos, {name="titanium:light"})
 						end
+						if new_pos then
+							local old_pos = player_positions[player_name]
+							if minetest.get_node(old_pos).name == "titanium:light" then
+								minetest.remove_node(old_pos)
+							end
+						end
+						player_positions[player_name] = pos
 					end
-					player_positions[player_name] = pos
+	
+					local wielded_item
+					last_wielded[player_name] = wielded_item;
+				elseif last_wielded[player_name] == "titanium:sam_titanium" then
+					local pos = vector.round(player:get_pos())
+					pos.y = pos.y+1
+					if minetest.get_node(pos).name == "titanium:light" then
+						minetest.remove_node(pos)
+					end
+					local old_pos = player_positions[player_name]
+					if minetest.get_node(old_pos).name == "titanium:light" then
+						minetest.remove_node(old_pos)
+					end
+					last_wielded[player_name] = wielded_item
 				end
-
-				local wielded_item
-				last_wielded[player_name] = wielded_item;
-			elseif last_wielded[player_name] == "titanium:sam_titanium" then
-				local pos = vector.round(player:get_pos())
-				pos.y = pos.y+1
-				if minetest.get_node(pos).name == "titanium:light" then
-					minetest.remove_node(pos)
-				end
-				local old_pos = player_positions[player_name]
-				if minetest.get_node(old_pos).name == "titanium:light" then
-					minetest.remove_node(old_pos)
-				end
-				last_wielded[player_name] = wielded_item
 			end
+		timer = 0
 		end
 	end
+end)
 
-	local function continue_steps()
-		do_step()
-		minetest.after(0.03, minetest.delay_function, 3, continue_steps)
-	end
-	continue_steps()
+minetest.register_node("titanium:light", {
+	drawtype = "airlike",
+	walkable = false,
+	sunlight_propagates = true,
+	buildable_to = true,
+	pointable = false,
+	drop = "",
+	light_source = 11,
+})
 
-	minetest.register_node("titanium:light", {
-		drawtype = "airlike",
-		walkable = false,
-		sunlight_propagates = true,
-		buildable_to = true,
-		pointable = false,
-		drop = "",
-		light_source = 11,
-	})
-
-	minetest.register_tool("titanium:sam_titanium", {
-		description = "Google Glass Titanium",
-		inventory_image = "sam_titanium.png",
-		wield_image = "sam_titanium.png",
-		tool_capabilities = {
-			max_drop_level=1,
-			groupcaps={
-				cracky={times={[2]=1.20, [3]=0.80}, uses=5, maxlevel=1}
-			}
-		},
-	})
-
-	minetest.register_craft({
-		output = 'titanium:sam_titanium',
-		recipe = {
-			{'titanium:titanium_plate', 'default:torch', 'titanium:titanium_plate'},
-			{'titanium:glass', 'default:mese_crystal', 'titanium:glass'},
+minetest.register_tool("titanium:sam_titanium", {
+	description = "Google Glass Titanium",
+	inventory_image = "sam_titanium.png",
+	wield_image = "sam_titanium.png",
+	tool_capabilities = {
+		max_drop_level=1,
+		groupcaps={
+			cracky={times={[2]=1.20, [3]=0.80}, uses=5, maxlevel=1}
 		}
-	})
+	},
+})
 
-	minetest.register_alias("titanium:who_knows", "air")
-end
+minetest.register_craft({
+	output = 'titanium:sam_titanium',
+	recipe = {
+		{'titanium:titanium_plate', 'default:torch', 'titanium:titanium_plate'},
+		{'titanium:glass', 'default:mese_crystal', 'titanium:glass'},
+	}
+})
 
 -- Cleanup for leftover and player-placed titanium lights
 minetest.register_lbm({
