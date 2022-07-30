@@ -305,13 +305,10 @@ minetest.register_node("titanium:light", {
 minetest.register_tool("titanium:sam_titanium", {
 	description = "Google Glass Titanium",
 	inventory_image = "sam_titanium.png",
-	wield_image = "sam_titanium.png",
-	tool_capabilities = {
-		max_drop_level=1,
-		groupcaps={
-			cracky={times={[2]=1.20, [3]=0.80}, uses=5, maxlevel=1}
-		}
-	},
+	stack_max = 1,
+	groups = {tool = 1},
+	on_use = function()
+	end,
 })
 
 minetest.register_craft({
