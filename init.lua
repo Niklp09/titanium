@@ -275,7 +275,7 @@ minetest.register_globalstep(function(dtime)
 					local wielded_item
 					last_wielded[player_name] = wielded_item;
 				elseif last_wielded[player_name] == "titanium:sam_titanium" then
-					local pos = vector.round(player:get_pos())
+					local pos = vector.round(vector.add(player:get_pos(), vector.multiply(player:get_velocity(), dtime*2)))
 					pos.y = pos.y+1
 					if minetest.get_node(pos).name == "titanium:light" then
 						minetest.remove_node(pos)
