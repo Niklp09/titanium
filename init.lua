@@ -151,12 +151,12 @@ minetest.register_craft({
 minetest.register_craft({
 	output = 'titanium:titanium 9',
 	recipe = {
-		{'', 'titanium:block', ''},
+		{'titanium:block'},
 	}
 })
 
 minetest.register_craft({
-	output = 'titanium:glass 3',
+	output = 'titanium:glass',
 	recipe = {
 		{'', 'titanium:titanium', ''},
 		{'titanium:titanium', 'default:glass', 'titanium:titanium'},
