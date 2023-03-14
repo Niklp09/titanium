@@ -205,15 +205,12 @@ local player_positions = {}
 local last_wielded = {}
 
 local function check_for_googles(player)
-	if not player then
-		return
+	if not player then return end
+	local inv = player:get_inventory()
+	if inv:contains_item("main", "titanium:sam_titanium") then
+		return true
 	end
-	local hotbar = player:get_inventory():get_list("main")
-	for i = 1, player:hud_get_hotbar_itemcount() do
-		if hotbar[i]:get_name() == "titanium:sam_titanium" then
-			return true
-		end
-	end
+	return false
 end
 
 minetest.register_on_joinplayer(function(player)
@@ -222,8 +219,7 @@ minetest.register_on_joinplayer(function(player)
 	last_wielded[player_name] = player:get_wielded_item():get_name()
 	local pos = vector.round(player:get_pos())
 	pos.y = pos.y+1
-	if not check_for_googles(player)
-	and minetest.get_node(pos).name == "titanium:light" then
+	if not check_for_googles(player) and minetest.get_node(pos).name == "titanium:light" then
 		minetest.remove_node(pos)
 	end
 	player_positions[player_name] = pos
@@ -259,8 +255,7 @@ minetest.register_globalstep(function(dtime)
 					local new_pos = not vector.equals(pos, player_positions[player_name])
 					if last_wielded[player_name] ~= "titanium:sam_titanium"
 					or new_pos then
-						if (minetest.get_node_light(pos) or 0) < 11
-						and minetest.get_node(pos).name == "air" then
+						if (minetest.get_node_light(pos) or 0) < 11 and minetest.get_node(pos).name == "air" then
 							minetest.add_node(pos, {name="titanium:light"})
 						end
 						if new_pos then
@@ -271,9 +266,7 @@ minetest.register_globalstep(function(dtime)
 						end
 						player_positions[player_name] = pos
 					end
-	
-					local wielded_item
-					last_wielded[player_name] = wielded_item;
+					last_wielded[player_name] = nil
 				elseif last_wielded[player_name] == "titanium:sam_titanium" then
 					local pos = vector.round(vector.add(player:get_pos(), vector.multiply(player:get_velocity(), dtime*2)))
 					pos.y = pos.y+1
@@ -284,7 +277,7 @@ minetest.register_globalstep(function(dtime)
 					if minetest.get_node(old_pos).name == "titanium:light" then
 						minetest.remove_node(old_pos)
 					end
-					last_wielded[player_name] = wielded_item
+					last_wielded[player_name] = nil
 				end
 			end
 		timer = 0
